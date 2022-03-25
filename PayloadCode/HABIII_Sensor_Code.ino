@@ -72,7 +72,7 @@ void loop() {
     sensors_event_t event;
     bmp.getEvent(&event);
     if (event.pressure){
-      Serial.print("P: "); Serial.print(event.pressure); Serial.println(" hPa");
+      Serial.print("P: "); Serial.print(event.pressure); Serial.println(" hPa"); 
       float temperature; bmp.getTemperature(&temperature);
       Serial.print("T: "); Serial.print(temperature); Serial.println(" C");
       float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
@@ -108,7 +108,7 @@ Serial.print("OZ: "); Serial.print(ozoneConcentration); Serial.println(" ppb");
   Serial.print(sensorValue);
   Serial.println("");
 
-/*
+/* //Commented out as we didn't have a NO sensor for our March test
 //Read the NO sensor voltage
   int NO2Reading = analogRead(NO_PIN) + 1; // Get raw sensor reading for UV Sensor
   float NO2Resistance = NO2SeriesResistor * ((1023.0 / (NO2Reading - ADC_OFFSET)) -1); //Convert reading into resistance value
@@ -142,45 +142,4 @@ int  MGGetPercentage(float volts, float *pcurve)
    } else {
       return pow(10, ((volts/DC_GAIN)-pcurve[1])/pcurve[2]+pcurve[0]);
    }
-}
-
-int convertUV (float UVvalue) {
-  int index;
-  if (UVvalue < 50) {
-    index = 0;
-  }
-  else if (UVvalue < 227) {
-    index = 1;
-  }
-  else if (UVvalue < 318) {
-    index = 2;
-  }
-  else if (UVvalue < 408) {
-    index = 3;
-  }
-  else if (UVvalue < 503) {
-    index = 4;
-  }
-  else if (UVvalue < 606) {
-    index = 5;
-  }
-  else if (UVvalue < 696) {
-    index = 6;
-  }
-  else if (UVvalue < 795) {
-    index = 7;
-  }
-  else if (UVvalue < 881) {
-    index = 8;
-  }
-  else if (UVvalue < 976) {
-    index = 9;
-  }
-  else if (UVvalue < 1079) {
-    index = 10;
-  }
-  else {
-    index = 11;
-  }
-  return index;
 }
