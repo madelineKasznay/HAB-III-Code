@@ -10,12 +10,16 @@ import ms5803py
 import pynmeagps
 from gpiozero import CPUTemperature
 
+#Global sensor varibles
 Arduino_sensor_data = ''
 GPS_Sensor_data = ''
 
+#Serial Ports they tend to change when things are unplugged
+#I recommend /dev/tty/USB* ls and /dev/tty/ACM* ls to find the correct port
+
 stream = serial.Serial('/dev/ttyUSB1',9600) #GPS Port
 
-uno_port = serial.Serial(
+uno_port = serial.Serial( #Ardunio Port
     port='/dev/ttyACM0',
     baudrate=9600,
     parity=serial.PARITY_NONE,
@@ -24,7 +28,7 @@ uno_port = serial.Serial(
     timeout=1
 )
 
-radio_port =serial.Serial(
+radio_port =serial.Serial( #Radio Port
     port='/dev/ttyUSB0',
     baudrate=9600,
     parity=serial.PARITY_NONE,
@@ -33,7 +37,7 @@ radio_port =serial.Serial(
     timeout=1
 )
 
-
+# intialize the GPS, CPU temp and Pressure sensor
 nmr = pynmeagps.NMEAReader(stream)
 cpu = CPUTemperature()
 s = ms5803py.MS5803()
@@ -45,13 +49,13 @@ base_dir = '/sys/bus/w1/devices/'
 device_folder = glob.glob(base_dir + '28*')[0]
 device_file = device_folder + '/w1_slave'
 
-def read_temp_raw():
+def read_temp_raw(): 
     f = open(device_file, 'r')
     lines = f.readlines()
     f.close()
     return lines
  
-def read_temp():
+def read_temp(): #read Temp
     lines = read_temp_raw()
     if len(lines) >1:
         while lines[0].strip()[-3:] != 'YES':
@@ -64,7 +68,7 @@ def read_temp():
             # temp_f = temp_c * 9.0 / 5.0 + 32.0
             return temp_c
 
-def read_GGA():
+def read_GGA(): #read GPS
     for x in range(24):
         try:
             (raw_data, parsed_dat) = nmr.read()
@@ -81,10 +85,11 @@ def read_GGA():
             print(e)
     return 0,0,0,0,0
 
+#Arduino Thread
 def arduino_sensors():
     print('arduino sensors\n')
     outF=open("HAB3SensorData.txt","w")
-    outF.write('Start of Arduino Sensor Data\n')
+    outF.write('Start of Arduino Sensor Data\n') #Opens a text file
 
     new_data = False
     global Arduino_sensor_data
@@ -93,17 +98,18 @@ def arduino_sensors():
         x=uno_port.readline()
         LOCtime = time.localtime()
         LOCtimeSTR = time.strftime("%m/%d/%Y %H:%M:%S", LOCtime)
-        if (len(x) > 4):
+        if (len(x) > 4): # only reads in sensor data not the blanks sent
             if (new_data == False):
                 Arduino_sensor_data = ''
-            Arduino_sensor_data = Arduino_sensor_data + str(x) + '\n'
+            Arduino_sensor_data = Arduino_sensor_data + str(x) + '\n' #reads in new data
             new_data = True
         else:
-            new_data = False
+            new_data = False 
         outF.close()
         outF=open("HAB3SensorData.txt",'a')
-        outF.write(LOCtimeSTR+' '+str(x)+'\n')
+        outF.write(LOCtimeSTR+' '+str(x)+'\n') #writes to a text file
 
+#Pi Sensors Thread
 def pi_sensors():
     global GPS_Sensor_data
     GPStime = ''
